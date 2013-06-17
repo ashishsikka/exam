@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<library>
+  <book>
+    <title>Programming PHP</title>
+    <authors>
+      <author>Rasmus Lerdorf</author>
+      <author>Kevin Tatroe</author>
+    </authors>
+    <isbn>1-56592-610-2</isbn>
+    <comment>A great book!</comment>
+  </book>
+  <book>
+    <title>PHP Pocket Reference</title>
+    <authors>
+      <author>Rasmus Lerdorf</author>
+    </authors>
+    <isbn>1-56592-769-9</isbn>
+    <comment>It really does fit in your pocket</comment>
+  </book>
+  <book>
+    <title>Perl Cookbook</title>
+    <authors>
+      <author>Tom Christiansen</author>
+      <author>Nathan Torkington</author>
+    </authors>
+    <isbn>1-56592-243-3</isbn>
+    <comment>Hundreds of useful techniques, most just as applicable to
+             PHP as to Perl
+    </comment>
+  </book>
+</library>

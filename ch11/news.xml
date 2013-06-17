@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <news xmlns:news="http://slashdot.org/backslash.dtd">
+  <story>
+    <title>O'Reilly Publishes Programming PHP</title>
+    <url>http://example.org/article.php?id=20020430/458566</url>
+    <time>2002-04-30 09:04:23</time>
+    <author>Rasmus and some others</author>
+  </story>
+  <story>
+    <title>Transforming XML with PHP Simplified</title>
+    <url>http://example.org/article.php?id=20020430/458566</url>
+    <time>2002-04-30 09:04:23</time>
+    <author>k.tatroe</author>
+  </story>
+</news>
