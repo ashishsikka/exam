@@ -31,10 +31,13 @@ if ($db->connect_error)
 }
 
 
-if (!empty($_POST['NewTask']))
+if (!empty($_POST['name']))
 {
     echo "Adding new task {$_POST['NewTask']}";
-    $query = "INSERT INTO tasks VALUES ('".$_POST['NewTask']."',NULL, NULL, NULL , NULL) ";
+    echo "Owner is {$_POST['owner']}";
+    echo "Priority is {$_POST['priority']}";
+    echo "Due date is {$_POST['due']}";        
+    $query = "INSERT INTO tasks VALUES ('".$_POST['name']."','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , NULL) ";
     echo $query;
     if (!$db->query($query))
     {
@@ -50,7 +53,7 @@ if (!empty($_POST['NewTask']))
 
 
 <h4>List of things to do</h4>
-<ul>
+
 
 <?php
 $sql = "SELECT * FROM tasks";
@@ -60,21 +63,57 @@ if (($result = $db->query($sql))==FALSE)
     die($db->error); 
 }
 ?>
-
+<table border="1">
+    <tr>                                       
+    <td> <b> name </b> </td>     <td> <b> owner </b> </td>    <td> <b> priority </b> </td>    <td> <b> due date </b> </td>    <td> <b> created </b> </td>
+    
+    <tr>
+    
 <?php 
 while ($row = $result->fetch_assoc()) {  ?>
-    <li> <?php echo $row['name']; ?> </li>
+    <tr>                                         
+    <td> <?php echo $row['name']; ?> </td>
+    <td> <?php echo $row['owner']; ?> </td> 
+    <td> <?php echo $row['priority']; ?> </td>
+    <td> <?php echo $row['due']; ?> </td>
+    <td> <?php echo $row['created']; ?> </td>                                         
+    <tr>                                         
 <?php } ?>
 
+</table>
 
-
-</ul>
-
-
+</br>
+</br>
 
 
 <form name="input" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
-Add new task: <input type="text" name="NewTask" ><br>
+Add new task: </br>
+<table>
+<tr>
+    <td> Name</td>
+    <td>
+    <input type="text" name="name" >
+    </td>
+</tr>
+    <tr>
+    <td> Owner</td>
+    <td>
+    <input type="text" name="owner" >
+    </td>
+</tr>
+<tr>
+    <td> Priority</td>
+    <td>
+    <input type="text" name="priority" >
+    </td>
+</tr>
+<tr>
+    <td> Due Date</td>
+    <td>
+    <input type="text" name="due" >
+    </td>
+</tr>
+
 <input type="submit" value="Submit">
 </form> 
 
