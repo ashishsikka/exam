@@ -22,6 +22,12 @@ function validate()
 </script>
 
 <?php
+
+function today()
+{
+    return date("Y-m-d");
+}
+     
 $db = new mysqli("localhost", "root", "new123", "checklist");
 
  // check DB connection
@@ -36,8 +42,10 @@ if (!empty($_POST['name']))
     echo "Adding new task {$_POST['NewTask']}";
     echo "Owner is {$_POST['owner']}";
     echo "Priority is {$_POST['priority']}";
-    echo "Due date is {$_POST['due']}";        
-    $query = "INSERT INTO tasks VALUES ('".$_POST['name']."','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , NULL) ";
+    echo "Due date is {$_POST['due']}";
+    $createdate=today();
+    echo "Created date is {$createdate}";
+    $query = "INSERT INTO tasks VALUES ('".$_POST['name']."','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , '{$createdate}' ) ";
     echo $query;
     if (!$db->query($query))
     {
@@ -46,7 +54,7 @@ if (!empty($_POST['name']))
     else
     {
          //printf("New Record has id %d.\n", $db->insert_id);
-    } 
+    }
 }
 ?>
 
