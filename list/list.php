@@ -39,21 +39,24 @@ if ($db->connect_error)
 
 if (!empty($_POST['name']))
 {
-    echo "Adding new task {$_POST['NewTask']}";
+    echo "Adding new task";
     echo "Owner is {$_POST['owner']}";
     echo "Priority is {$_POST['priority']}";
     echo "Due date is {$_POST['due']}";
     $createdate=today();
     echo "Created date is {$createdate}";
-    $query = "INSERT INTO tasks VALUES ('".$_POST['name']."','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , '{$createdate}' ) ";
+    $query = "INSERT INTO tasks VALUES ('{$_POST['name']}','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , '$createdate' ) ";
     echo $query;
     if (!$db->query($query))
     {
-        echo "Insert failed". $db->error; 
+        echo "Insert failed". $db->error;
+        $failed=true;
+        $NameError="Duplicate task name";
     }
     else
     {
-         //printf("New Record has id %d.\n", $db->insert_id);
+         printf("New Record has id %d.\n", $db->insert_id);
+         $failed=false;
     }
 }
 ?>
@@ -100,10 +103,13 @@ Add new task: </br>
 <tr>
     <td> Name</td>
     <td>
-    <input type="text" name="name" >
+    <input type="text" name="name" value=<?php echo $failed?$_POST['name']:"" ?> >
+    </td>
+    <td style="color:rgb(255,0,0)">
+         <?php echo $failed?$NameError:"" ?>
     </td>
 </tr>
-    <tr>
+<tr>
     <td> Owner</td>
     <td>
     <input type="text" name="owner" >
