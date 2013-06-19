@@ -7,7 +7,7 @@
 
 
 <script>
-function validate()
+function validateForm()
 {
     var x=document.getElementById("NewTaskInput");
 
@@ -27,7 +27,25 @@ function today()
 {
     return date("Y-m-d");
 }
-     
+
+function validatePriority($priority)
+{
+    return (strspn($priority, "1234567890")==strlen($priority));
+}
+
+function validateDueDate($duedate, &$duedate_error)
+{
+    if (date('Y-m-d', strtotime($duedate)) == $duedate)
+    {
+        return true;
+    }
+    else
+    {
+        $duedate_error = "Due date must be of the format YYYY-mm-dd";
+        return false;
+    }
+}
+
 $db = new mysqli("localhost", "root", "new123", "checklist");
 
  // check DB connection
@@ -45,18 +63,31 @@ if (!empty($_POST['name']))
     echo "Due date is {$_POST['due']}";
     $createdate=today();
     echo "Created date is {$createdate}";
-    $query = "INSERT INTO tasks VALUES ('{$_POST['name']}','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , '$createdate' ) ";
-    echo $query;
-    if (!$db->query($query))
+    $failed=false;
+
+    if (!validatePriority($_POST['priority']))
     {
-        echo "Insert failed". $db->error;
         $failed=true;
-        $NameError="Duplicate task name";
+        $priority_error="Priority must be a positive integer less than 1,000,000";
+    }
+    elseif (!validateDueDate($_POST['due'], $duedate_error))
+    {
+        $failed=true;
     }
     else
     {
-         printf("New Record has id %d.\n", $db->insert_id);
-         $failed=false;
+        $query = "INSERT INTO tasks VALUES ('{$_POST['name']}','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , '$createdate' ) ";
+        echo $query;
+        if (!$db->query($query))
+        {
+            echo "Insert failed". $db->error;
+            $failed=true;
+            $NameError="Duplicate task name";
+        }
+        else
+        {
+            printf("New Record has id %d.\n", $db->insert_id);
+        }
     }
 }
 ?>
@@ -76,13 +107,14 @@ if (($result = $db->query($sql))==FALSE)
 ?>
 <table border="1">
     <tr>                                       
-    <td> <b> name </b> </td>     <td> <b> owner </b> </td>    <td> <b> priority </b> </td>    <td> <b> due date </b> </td>    <td> <b> created </b> </td>
+    <td> <b> </b> </td> <td> <b> name </b> </td>     <td> <b> owner </b> </td>    <td> <b> priority </b> </td>    <td> <b> due date </b> </td>    <td> <b> created </b> </td>
     
     <tr>
     
 <?php 
 while ($row = $result->fetch_assoc()) {  ?>
-    <tr>                                         
+    <tr>
+    <td> <input type="radio" name="editrow" value="<?php echo $row['name']; ?>" > </td>
     <td> <?php echo $row['name']; ?> </td>
     <td> <?php echo $row['owner']; ?> </td> 
     <td> <?php echo $row['priority']; ?> </td>
@@ -97,7 +129,7 @@ while ($row = $result->fetch_assoc()) {  ?>
 </br>
 
 
-<form name="input" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+<form name="input" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" onsubmit="return validateForm()" >
 Add new task: </br>
 <table>
 <tr>
@@ -111,20 +143,20 @@ Add new task: </br>
 </tr>
 <tr>
     <td> Owner</td>
-    <td>
-    <input type="text" name="owner" >
-    </td>
+    <td> <input type="text" name="owner" value=<?php echo $failed?$_POST['owner']:"" ?> > </td>
 </tr>
 <tr>
     <td> Priority</td>
-    <td>
-    <input type="text" name="priority" >
-    </td>
+    <td> <input type="text" name="priority" value=<?php echo $failed?$_POST['priority']:"" ?> > </td>
+    <td style="color:rgb(255,0,0)">
+         <?php echo $failed?$priority_error:"" ?>
+    </td>    
 </tr>
 <tr>
     <td> Due Date</td>
-    <td>
-    <input type="text" name="due" >
+    <td> <input type="text" name="due" value=<?php echo $failed?$_POST['due']:"" ?>>  </td>
+    <td style="color:rgb(255,0,0)">
+             <?php echo $failed?$duedate_error:"" ?>
     </td>
 </tr>
 
