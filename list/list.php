@@ -9,16 +9,51 @@
 <script>
 function validateForm()
 {
-    var x=document.getElementById("NewTaskInput");
+    var x=document.input.name;
 
     console.log("value of x is " + x.value);
 
-    if(x.value==""||isNaN(x.value))
+    if(x.value=="")
     {
-	alert("Not Numeric");
+        console.log("name is empty. It is" + x.value);
+        var y=document.getElementById('NameRow').cells;
+        y[2].innerHTML="Must enter a name";
+        return false;
     }
-    //document.write("<p> "+ "foo" + "</p>");
+    return true;
 }
+
+function SelectRow()
+{
+    var buttons = document.getElementsByName("editrow");
+    for (var i = 0; i < buttons.length; i++)
+    {
+         // do something with buttons[i].checked
+        if (buttons[i].checked)
+        {
+            var x=document.input.name;
+            x.value = buttons[i].value;
+            var table = document.getElementById('listTable');
+            for (var k = 0, row; row = table.rows[k]; k++)
+            {
+                 //iterate through rows
+                if ((row.cells.length >=2) && (row.cells[1].id=="radio_"+buttons[i].value) )
+                {
+                    var owner_input=document.input.owner;
+                    owner_input.value = row.cells[2].textContent;
+                    
+                    var priority_input=document.input.priority;
+                    priority_input.value = row.cells[3].textContent;
+
+                    var duedate_input=document.input.due;
+                    duedate_input.value = row.cells[4].textContent;
+                }
+            }            
+        }
+    }
+
+}
+
 </script>
 
 <?php
@@ -30,11 +65,17 @@ function today()
 
 function validatePriority($priority)
 {
+    if ($priority == "")
+        return true;
+        
     return (strspn($priority, "1234567890")==strlen($priority));
 }
 
 function validateDueDate($duedate, &$duedate_error)
 {
+    if ($duedate == "")
+        return true;
+    
     if (date('Y-m-d', strtotime($duedate)) == $duedate)
     {
         return true;
@@ -54,29 +95,34 @@ if ($db->connect_error)
     echo "Connect Error {$db->connect_errno} {$db->connect_error} ";
 }
 
-
-if (!empty($_POST['name']))
+$name=trim($_POST['name']);
+if (!empty($name))
 {
     echo "Adding new task";
-    echo "Owner is {$_POST['owner']}";
-    echo "Priority is {$_POST['priority']}";
-    echo "Due date is {$_POST['due']}";
+    $owner = trim($_POST['owner']);
+    $priority = trim($_POST['priority']);
+    $due = trim($_POST['due']);
+    
+    echo "Owner is {$owner}";
+    echo "Priority is {$priority}";
+    echo "Due date is {$due}";
+    
     $createdate=today();
     echo "Created date is {$createdate}";
     $failed=false;
 
-    if (!validatePriority($_POST['priority']))
+    if (!validatePriority($priority))
     {
         $failed=true;
         $priority_error="Priority must be a positive integer less than 1,000,000";
     }
-    elseif (!validateDueDate($_POST['due'], $duedate_error))
+    elseif (!validateDueDate($due, $duedate_error))
     {
         $failed=true;
     }
     else
     {
-        $query = "INSERT INTO tasks VALUES ('{$_POST['name']}','{$_POST['owner']}', '{$_POST['priority']}', '{$_POST['due']}' , '$createdate' ) ";
+        $query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
         echo $query;
         if (!$db->query($query))
         {
@@ -105,7 +151,7 @@ if (($result = $db->query($sql))==FALSE)
     die($db->error); 
 }
 ?>
-<table border="1">
+<table border="1" id="listTable">
     <tr>                                       
     <td> <b> </b> </td> <td> <b> name </b> </td>     <td> <b> owner </b> </td>    <td> <b> priority </b> </td>    <td> <b> due date </b> </td>    <td> <b> created </b> </td>
     
@@ -114,8 +160,8 @@ if (($result = $db->query($sql))==FALSE)
 <?php 
 while ($row = $result->fetch_assoc()) {  ?>
     <tr>
-    <td> <input type="radio" name="editrow" value="<?php echo $row['name']; ?>" > </td>
-    <td> <?php echo $row['name']; ?> </td>
+    <td> <input type="radio" name="editrow" onclick="SelectRow()" value="<?php echo $row['name']; ?>" > </td>
+    <td id="<?php echo "radio_".$row['name']; ?>"> <?php echo $row['name']; ?> </td>
     <td> <?php echo $row['owner']; ?> </td> 
     <td> <?php echo $row['priority']; ?> </td>
     <td> <?php echo $row['due']; ?> </td>
@@ -131,8 +177,8 @@ while ($row = $result->fetch_assoc()) {  ?>
 
 <form name="input" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" onsubmit="return validateForm()" >
 Add new task: </br>
-<table>
-<tr>
+<table name="InputTable">
+<tr id="NameRow">
     <td> Name</td>
     <td>
     <input type="text" name="name" value=<?php echo $failed?$_POST['name']:"" ?> >
