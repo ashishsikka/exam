@@ -55,6 +55,13 @@ function SelectRow()
     text.innerHTML="Update Task:";
 }
 
+function SetDeleteFlag()
+{
+    var text = document.getElementById('fDelete');
+    text.value="y";
+    console.log("Setting delete flag");
+}
+
 </script>
 
 <?php
@@ -123,27 +130,33 @@ if (!empty($name))
     $owner = trim($_POST['owner']);
     $priority = trim($_POST['priority']);
     $due = trim($_POST['due']);
+    $delete = trim($_POST['fDelete']);
     
     echo "Owner is {$owner}";
     echo "Priority is {$priority}";
     echo "Due date is {$due}";
+    echo "Delete is {$delete}";
     
     $createdate=today();
     echo "Created date is {$createdate}";
     $failed=false;
 
-    if (!validatePriority($priority))
+    if (($delete!="y") && (!validatePriority($priority)))
     {
         $failed=true;
         $priority_error="Priority must be a positive integer less than 1,000,000";
     }
-    elseif (!validateDueDate($due, $duedate_error))
+    elseif (($delete!="y") && (!validateDueDate($due, $duedate_error)))
     {
         $failed=true;
     }
     else
     {
-        if (!NameExists($name))
+        if ($delete=="y")
+        {
+            $query = "DELETE FROM tasks where name='{$name}'";
+        }
+        elseif (!NameExists($name))
         {
             $query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
         }
@@ -229,15 +242,13 @@ while ($row = $result->fetch_assoc()) {  ?>
 <tr>
     <td> Due Date</td>
     <td> <input type="text" name="due" value="<?php echo $failed?$due:"" ?>" ></td>
-
-
-    
     <td style="color:rgb(255,0,0)">
              <?php echo $failed?$duedate_error:"" ?>
     </td>
 </tr>
-
+<input type="hidden" name="fDelete" id="fDelete" value="n">
 <input type="submit" value="Submit">
+<input type="submit" value="Delete Task" onclick="SetDeleteFlag()">
 </form> 
 
 <!--
