@@ -51,7 +51,8 @@ function SelectRow()
             }            
         }
     }
-
+    var text = document.getElementById('UpdateCaption');
+    text.innerHTML="Update Task:";
 }
 
 </script>
@@ -84,6 +85,26 @@ function validateDueDate($duedate, &$duedate_error)
     {
         $duedate_error = "Due date must be of the format YYYY-mm-dd";
         return false;
+    }
+}
+
+function NameExists($name)
+{
+    global $db;
+    $sql = "SELECT * FROM tasks where name='{$name}'";
+
+    if (($result = $db->query($sql))==FALSE)
+    {
+        die($db->error); 
+    }
+    echo "number of records is ".$result->num_rows;
+    if (0 == $result->num_rows)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
     }
 }
 
@@ -122,8 +143,15 @@ if (!empty($name))
     }
     else
     {
-        $query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
-        echo $query;
+        if (!NameExists($name))
+        {
+            $query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
+        }
+        else
+        {
+            $query = "UPDATE tasks SET owner='{$owner}', priority='{$priority}', due='{$due}'  where name='{$name}'";
+        }
+        echo $query;        
         if (!$db->query($query))
         {
             echo "Insert failed". $db->error;
@@ -163,7 +191,7 @@ while ($row = $result->fetch_assoc()) {  ?>
     <td> <input type="radio" name="editrow" onclick="SelectRow()" value="<?php echo $row['name']; ?>" > </td>
     <td id="<?php echo "radio_".$row['name']; ?>"> <?php echo $row['name']; ?> </td>
     <td> <?php echo $row['owner']; ?> </td> 
-    <td> <?php echo $row['priority']; ?> </td>
+    <td> <?php echo $row['priority'] ?> </td>
     <td> <?php echo $row['due']; ?> </td>
     <td> <?php echo $row['created']; ?> </td>                                         
     <tr>                                         
@@ -176,12 +204,12 @@ while ($row = $result->fetch_assoc()) {  ?>
 
 
 <form name="input" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" onsubmit="return validateForm()" >
-Add new task: </br>
+<p id="UpdateCaption"> Add new task: </p>
 <table name="InputTable">
 <tr id="NameRow">
     <td> Name</td>
     <td>
-    <input type="text" name="name" value=<?php echo $failed?$_POST['name']:"" ?> >
+    <input type="text" name="name" value="<?php echo $failed?$name:"" ?>" >
     </td>
     <td style="color:rgb(255,0,0)">
          <?php echo $failed?$NameError:"" ?>
@@ -189,18 +217,21 @@ Add new task: </br>
 </tr>
 <tr>
     <td> Owner</td>
-    <td> <input type="text" name="owner" value=<?php echo $failed?$_POST['owner']:"" ?> > </td>
+    <td> <input type="text" name="owner" value="<?php echo $failed?$owner:"" ?>" > </td>
 </tr>
 <tr>
     <td> Priority</td>
-    <td> <input type="text" name="priority" value=<?php echo $failed?$_POST['priority']:"" ?> > </td>
+    <td> <input type="text" name="priority" value="<?php echo $failed?$priority:"" ?>" > </td>
     <td style="color:rgb(255,0,0)">
          <?php echo $failed?$priority_error:"" ?>
     </td>    
 </tr>
 <tr>
     <td> Due Date</td>
-    <td> <input type="text" name="due" value=<?php echo $failed?$_POST['due']:"" ?>>  </td>
+    <td> <input type="text" name="due" value="<?php echo $failed?$due:"" ?>" ></td>
+
+
+    
     <td style="color:rgb(255,0,0)">
              <?php echo $failed?$duedate_error:"" ?>
     </td>
