@@ -66,6 +66,76 @@ function SetDeleteFlag()
 
 <?php
 
+class Task
+{
+    public $name, $priority, $owner, $due, $created;
+}
+
+
+class AllTasks implements Iterator
+{
+    private $alltasks;
+    private $index=0;
+    
+
+    public function sort($key)
+    {
+        
+    }
+
+    public function fetch($db)
+    {
+        $sql = "SELECT * FROM tasks";
+        
+        if (($result = $db->query($sql))==FALSE)
+        {
+            die($db->error); 
+        }
+        while ($row = $result->fetch_assoc())
+        {
+            $task = new Task;
+            $task->name = $row['name'];
+            $task->priority = $row['priority'];
+            $task->owner = $row['owner'];
+            $task->due = $row['due'];
+            $task->created = $row['created'];
+            $this->alltasks[]= $task;
+        }
+    }
+
+    public function __construct()
+    {
+        $this->index =0;
+    }
+
+     // iterator interfaces
+    public function current()
+    {
+        return $this->alltasks[$this->index];
+    }
+    public function key()
+    {
+        return $this->index;
+    }
+    public function next()
+    {
+        $this->index += 1;
+        if ($this->valid())
+        {
+            return $this->alltasks[$this->index];
+        }
+    }
+    public function rewind()
+    {
+        $this->index=0;
+    }
+    public function valid()
+    {
+        return isset($this->alltasks[$this->index]);
+    }
+}
+
+
 function today()
 {
     return date("Y-m-d");
@@ -122,11 +192,12 @@ if ($db->connect_error)
 {
     echo "Connect Error {$db->connect_errno} {$db->connect_error} ";
 }
+$failed = false;
 
-$name=trim($_POST['name']);
-if (!empty($name))
+if (isset($_POST['name']))
 {
     echo "Adding new task";
+    $name=trim($_POST['name']);
     $owner = trim($_POST['owner']);
     $priority = trim($_POST['priority']);
     $due = trim($_POST['due']);
@@ -185,30 +256,26 @@ if (!empty($name))
 
 
 <?php
-$sql = "SELECT * FROM tasks";
+    $tasks = new AllTasks;
+    $tasks->fetch($db);
 
-if (($result = $db->query($sql))==FALSE)
-{
-    die($db->error); 
-}
 ?>
 <table border="1" id="listTable">
     <tr>                                       
     <td> <b> </b> </td> <td> <b> name </b> </td>     <td> <b> owner </b> </td>    <td> <b> priority </b> </td>    <td> <b> due date </b> </td>    <td> <b> created </b> </td>
     
     <tr>
-    
 <?php 
-while ($row = $result->fetch_assoc()) {  ?>
+foreach ($tasks as $row) {  ?>
     <tr>
-    <td> <input type="radio" name="editrow" onclick="SelectRow()" value="<?php echo $row['name']; ?>" > </td>
-    <td id="<?php echo "radio_".$row['name']; ?>"> <?php echo $row['name']; ?> </td>
-    <td> <?php echo $row['owner']; ?> </td> 
-    <td> <?php echo $row['priority'] ?> </td>
-    <td> <?php echo $row['due']; ?> </td>
-    <td> <?php echo $row['created']; ?> </td>                                         
+    <td> <input type="radio" name="editrow" onclick="SelectRow()" value="<?php echo $row->name; ?>" > </td>
+    <td id="<?php echo "radio_".$row->name; ?>"> <?php echo $row->name; ?> </td>
+    <td> <?php echo $row->owner; ?> </td> 
+    <td> <?php echo $row->priority; ?> </td>
+    <td> <?php echo $row->due; ?> </td>
+    <td> <?php echo $row->created; ?> </td>                                         
     <tr>                                         
-<?php } ?>
+<?php } ?>    
 
 </table>
 
