@@ -69,8 +69,48 @@ function SetDeleteFlag()
 class Task
 {
     public $name, $priority, $owner, $due, $created;
+    public function __get($property)
+    {
+        if ($property === 'overdue')
+        {
+            $past= new DateTime("0000-00-01");
+            $duedate=new DateTime($this->due);
+            $today= new DateTime(date("Y-m-d"));
+            if ($duedate < $past)
+            {
+                return false;
+            }
+            elseif( $duedate < $today)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
 }
 
+
+function  cmp($a, $b)
+{
+
+    global $field;
+    
+    if ($a->$field == $b->$field)
+    {
+        return 0;
+    }
+    elseif ($a->$field < $b->$field)
+    {
+        return -1;
+    }
+    else
+    {
+        return 1;
+    }
+}
 
 class AllTasks implements Iterator
 {
@@ -78,9 +118,12 @@ class AllTasks implements Iterator
     private $index=0;
     
 
+
     public function sort($key)
     {
-        
+        global $field;
+        $field = $key;
+        usort($this->alltasks, "cmp");
     }
 
     public function fetch($db)
@@ -248,6 +291,8 @@ if (isset($_POST['name']))
         }
     }
 }
+
+$redstyle="style=\"color:rgb(255,0,0)\"";
 ?>
 
 
@@ -258,7 +303,7 @@ if (isset($_POST['name']))
 <?php
     $tasks = new AllTasks;
     $tasks->fetch($db);
-
+    $tasks->sort("name");
 ?>
 <table border="1" id="listTable">
     <tr>                                       
@@ -267,12 +312,12 @@ if (isset($_POST['name']))
     <tr>
 <?php 
 foreach ($tasks as $row) {  ?>
-    <tr>
+    <tr <?php echo $row->overdue?$redstyle:"" ?> >
     <td> <input type="radio" name="editrow" onclick="SelectRow()" value="<?php echo $row->name; ?>" > </td>
     <td id="<?php echo "radio_".$row->name; ?>"> <?php echo $row->name; ?> </td>
     <td> <?php echo $row->owner; ?> </td> 
     <td> <?php echo $row->priority; ?> </td>
-    <td> <?php echo $row->due; ?> </td>
+    <td> <?php echo $row->due;  ?> </td>
     <td> <?php echo $row->created; ?> </td>                                         
     <tr>                                         
 <?php } ?>    
