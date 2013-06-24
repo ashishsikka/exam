@@ -97,12 +97,21 @@ function  cmp($a, $b)
 {
 
     global $field;
-    
-    if ($a->$field == $b->$field)
+    if ( ($field == "due") || ($field == "created"))
+    {
+        $left = new DateTime($a->$field);
+        $right = new DateTime($b->$field);
+    }
+    else
+    {
+        $left = $a->$field;
+        $right = $b->$field;
+    }
+    if ( $left == $right)
     {
         return 0;
     }
-    elseif ($a->$field < $b->$field)
+    elseif ($left < $right)
     {
         return -1;
     }
@@ -301,13 +310,29 @@ $redstyle="style=\"color:rgb(255,0,0)\"";
 
 
 <?php
-    $tasks = new AllTasks;
-    $tasks->fetch($db);
-    $tasks->sort("name");
+
+$tasks = new AllTasks;
+$tasks->fetch($db);
+$sortparameter="priority";
+if (isset($_GET['sort']))
+{
+    $sortparameter=$_GET['sort'];
+}
+$tasks->sort($sortparameter);
+$namequery=$_SERVER['PHP_SELF']."?sort=name";
+$ownerquery=$_SERVER['PHP_SELF']."?sort=owner";
+$priorityquery=$_SERVER['PHP_SELF']."?sort=priority";
+$duequery=$_SERVER['PHP_SELF']."?sort=due";
+$createdquery=$_SERVER['PHP_SELF']."?sort=created";
 ?>
 <table border="1" id="listTable">
     <tr>                                       
-    <td> <b> </b> </td> <td> <b> name </b> </td>     <td> <b> owner </b> </td>    <td> <b> priority </b> </td>    <td> <b> due date </b> </td>    <td> <b> created </b> </td>
+    <td> <b> </b> </td>
+    <td> <b> <a href="<?php echo $namequery ?>">name</a> </b> </td>
+    <td> <b> <a href="<?php echo $ownerquery ?>">owner</a> </b> </td>
+    <td> <b> <a href="<?php echo $priorityquery ?>">priority</a> </b> </td>
+    <td> <b> <a href="<?php echo $duequery ?>">due date</a> </b> </td>
+    <td> <b> <a href="<?php echo $createdquery ?>">created</a> </b> </td>
     
     <tr>
 <?php 
