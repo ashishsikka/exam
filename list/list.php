@@ -97,16 +97,23 @@ function  cmp($a, $b)
 {
 
     global $field;
+
+    if (!isset($a->$field))
+    {
+        return 1;
+    }
+    if (!isset($b->$field))
+    {
+        return -1;
+    }
+    $left = $a->$field;
+    $right = $b->$field;    
     if ( ($field == "due") || ($field == "created"))
     {
         $left = new DateTime($a->$field);
         $right = new DateTime($b->$field);
     }
-    else
-    {
-        $left = $a->$field;
-        $right = $b->$field;
-    }
+    
     if ( $left == $right)
     {
         return 0;
@@ -217,6 +224,55 @@ function validateDueDate($duedate, &$duedate_error)
     }
 }
 
+             //$query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
+function CreateInsertQuery($name, $owner, $priority, $due, $created)
+{
+    $first = true;
+    $columns= "(";
+    $values= "(";
+    $possibleCols = array("name", "owner", "priority", "due", "created");
+    foreach($possibleCols as $col)
+    {
+        if ($$col != "")
+        {
+            if (! $first)
+            {
+                $columns .= ",";
+                $values .= ",";
+            }
+            $first=false;
+            $columns .= $col;
+            $values .= "'".$$col."'";
+        }
+    }
+    $columns .= ")";
+    $values .= ")";
+    $res = "INSERT INTO tasks".$columns." VALUES".$values;
+    return $res;
+}
+                  
+ //$query = "UPDATE tasks SET owner='{$owner}', priority='{$priority}', due='{$due}'  where name='{$name}'";
+function CreateUpdateQuery($name, $owner, $priority, $due)
+{
+    $first = true;
+    $values= "";
+    $possibleCols = array("owner", "priority", "due");
+    foreach($possibleCols as $col)
+    {
+        if ($$col != "")
+        {
+            if (! $first)
+            {
+                $values .= ",";
+            }
+            $first=false;
+            $values .= $col."='".$$col."'";
+        }
+    }
+    $res = "UPDATE tasks SET ".$values." where name='{$name}'";
+    return $res;
+}
+            
 function NameExists($name)
 {
     global $db;
@@ -281,11 +337,13 @@ if (isset($_POST['name']))
         }
         elseif (!NameExists($name))
         {
-            $query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
+             //$query = "INSERT INTO tasks VALUES ('{$name}','{$owner}', '{$priority}', '{$due}' , '$createdate' ) ";
+            $query = CreateInsertQuery($name, $owner, $priority, $due, $createdate);
         }
         else
         {
-            $query = "UPDATE tasks SET owner='{$owner}', priority='{$priority}', due='{$due}'  where name='{$name}'";
+             //$query = "UPDATE tasks SET owner='{$owner}', priority='{$priority}', due='{$due}'  where name='{$name}'";
+            $query = CreateUpdateQuery($name, $owner, $priority, $due);            
         }
         echo $query;        
         if (!$db->query($query))
